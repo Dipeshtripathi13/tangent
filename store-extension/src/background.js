@@ -35,12 +35,9 @@ chrome.action.onClicked.addListener(async (tab) => {
   try {
     await chrome.tabs.sendMessage(tab.id, message);
     return;
-  } catch {
-    // No content script in this tab. Nearly always because the tab was open
-    // before the extension was installed or reloaded, which is the normal case
-    // right after setup. Inject it rather than sending the user to a help page
-    // and making them work out that they needed to reload.
-  }
+  } catch (err) {
+  if (!/Receiving end does not exist/.test(err?.message ?? '')) return;
+}
 
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/content.js'] });
