@@ -67,6 +67,7 @@ async function handle(msg, sender) {
     case 'accept':    return onAccept(tabId, msg.query);
     case 'get-state': return getState(tabId);
     case 'dismiss':   return onDismiss(tabId);
+    case 'close-panel': return closePanel(tabId);
     case 'settings':  return { ok: true, settings: await getSettings(), defaults: settingsDefaults() };
     case 'save-settings': {
       const settings = await saveSettings(msg.patch ?? {});
@@ -78,6 +79,15 @@ async function handle(msg, sender) {
       return { ok: true, removed };
     }
     default: return { ok: false, error: `unknown message: ${msg?.type}` };
+  }
+}
+
+async function closePanel(tabId) {
+  if (!tabId) return { ok: false, error: 'No tab available' };
+  try {
+    return await chrome.tabs.sendMessage(tabId, { type: 'close-panel' });
+  } catch (e) {
+    return { ok: false, error: e?.message ?? String(e) };
   }
 }
 
