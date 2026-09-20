@@ -16,6 +16,10 @@
 (function () {
   'use strict';
 
+  const INSTANCE_KEY = '__tangentContentInstance';
+  if (window[INSTANCE_KEY]) return;
+  window[INSTANCE_KEY] = true;
+
   // Take over cleanly from any previous instance in this page.
   document.getElementById('tangent-panel-host')?.remove();
   document.getElementById('tangent-push-style')?.remove();

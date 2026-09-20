@@ -317,10 +317,10 @@ async function saveKey() {
   }
   show('paneIdle');
 }
-// The content script frames this page and owns whether it is visible, so the
-// close button asks the parent rather than trying to hide itself.
+// Route close through the service worker so it remains reliable when this
+// iframe is hidden and shown again.
 $('btnClose').addEventListener('click', () => {
-  window.parent.postMessage({ tangent: 'close' }, '*');
+  void send({ type: 'close-panel' });
 });
 
 document.addEventListener('keydown', (e) => {

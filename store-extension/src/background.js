@@ -35,12 +35,9 @@ chrome.action.onClicked.addListener(async (tab) => {
   try {
     await chrome.tabs.sendMessage(tab.id, message);
     return;
-  } catch {
-    // No content script in this tab. Nearly always because the tab was open
-    // before the extension was installed or reloaded, which is the normal case
-    // right after setup. Inject it rather than sending the user to a help page
-    // and making them work out that they needed to reload.
-  }
+  } catch (err) {
+  if (!/Receiving end does not exist/.test(err?.message ?? '')) return;
+}
 
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/content.js'] });
@@ -70,6 +67,7 @@ async function handle(msg, sender) {
     case 'accept':    return onAccept(tabId, msg.query);
     case 'get-state': return getState(tabId);
     case 'dismiss':   return onDismiss(tabId);
+    case 'close-panel': return closePanel(tabId);
     case 'settings':  return { ok: true, settings: await getSettings(), defaults: settingsDefaults() };
     case 'save-settings': {
       const settings = await saveSettings(msg.patch ?? {});
@@ -81,6 +79,15 @@ async function handle(msg, sender) {
       return { ok: true, removed };
     }
     default: return { ok: false, error: `unknown message: ${msg?.type}` };
+  }
+}
+
+async function closePanel(tabId) {
+  if (!tabId) return { ok: false, error: 'No tab available' };
+  try {
+    return await chrome.tabs.sendMessage(tabId, { type: 'close-panel' });
+  } catch (e) {
+    return { ok: false, error: e?.message ?? String(e) };
   }
 }
 
